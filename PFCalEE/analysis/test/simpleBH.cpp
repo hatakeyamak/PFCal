@@ -272,6 +272,8 @@ int main(int argc, char** argv){//main
   //label << "hits";
   //miptree->Branch(label.str().c_str(),"std::vector<HGCSSSimpleHit>",&miphitvec);
 
+  double energy_max=-1.;
+
   TH1F* h_energy = new TH1F("h_energy","hit energy",1000,0.,5.);
   TH1F* h_z = new TH1F("h_z","z of hit",5000,3100.,5200);
   TH1F* h_z1 = new TH1F("h_z1","z of hit",5000,3150.,3550);
@@ -282,6 +284,68 @@ int main(int argc, char** argv){//main
   TH1F* h_l = new TH1F("h_l","layer of hit",80,0.,80.);
   TH1F* h_l2 = new TH1F("h_l2","layer of hit",30,50,80.);
   TH2F* h_zl = new TH2F("h_zl","z vs l of hit",5000,4300.,5200,25,30.,55.);
+  /////////////////////////
+  //Bryans analysis stuff//
+  /////////////////////////
+  TH2F* h_zx = new TH2F("h_zx","zx of hit",5000,3100,5200,1000,-2000,2000);
+  TH2F* h_zx10000 = new TH2F("h_zx10000","zx of hit",10000,3100,5200,1000,-2000,2000);
+  TH2F* h_zx1000 = new TH2F("h_zx1000","zx of hit",1000,3100,5200,1000,-2000,2000);
+  TH3F* h_xyz = new TH3F("h_xyz","xyz of hit",100,-2000.,2000.,100,-2000.,2000.,500,3100.,5200.); // 3d histo
+  TH2F* h_yz = new TH2F("h_yz","yz of hit",5000,3100,5200,1000,-2000,2000);
+  TH2F* h_zx1 = new TH2F("h_zx1","zx of hit",5000,3150,3550,4000,-2000,2000);
+  TH2F* h_yz1 = new TH2F("h_yz1","yz of hit",5000,3150,3550,4000,-2000,2000);
+  TH2F* h_zx2 = new TH2F("h_zx2","zx of hit",5000,3550,5200,4000,-2000,2000);
+  TH2F* h_yz2 = new TH2F("h_yz2","yz of hit",5000,3550,5200,4000,-2000,2000);
+  TH2F* h_zr = new TH2F("h_zr","zr of hit",5000,3100,5200,1000,0,2000);
+  
+  //////layer histos///////
+
+  TH2F* h_nszxl = new TH2F("h_nszxl","zx of hit not scint (layers)",1400,3800,5200,3000,-2000,2000);
+  TH2F* h_szxl = new TH2F("h_szxl","zx of hit scint (layers)",1400,3800,5200,3000,-2000,2000);
+  TH2F* h_nszx = new TH2F("h_nszx","zx of hit not scint",1900,3100,5200,4000,-2000,2000);
+  TH2F* h_szx = new TH2F("h_szx","zx of hit scint",1900,3100,5200,4000,-2000,2000);
+  TH2F* h_nsxy = new TH2F("h_nsxy","xy of hit not scint",2000,-2000,2000,2000,-2000,2000);
+  TH2F* h_sxy = new TH2F("h_sxy","xy of hit scint",2000,-2000,2000,2000,-2000,2000);
+  TH2F* h_nsxyl = new TH2F("h_nsxyl","xy of hit not scint (layers)",3000,-2000,2000,3000,-2000,2000);
+  TH2F* h_sxyl = new TH2F("h_sxyl","xy of hit scint (layers)",3000,-2000,2000,3000,-2000,2000);
+  
+  
+  TH2F* h_nszx36 = new TH2F("h_nszx36","zx of hit not scint",5000,3100,5200,1000,-1200,1200);
+  TH2F* h_nszx37 = new TH2F("h_nszx37","zx of hit not scint",5000,3100,5200,1000,-1200,1200);
+  TH2F* h_nszx38 = new TH2F("h_nszx38","zx of hit not scint",5000,3100,5200,1000,-1200,1200);
+  TH2F* h_nszx39 = new TH2F("h_nszx39","zx of hit not scint",5000,3100,5200,1000,-1200,1200);
+  TH2F* h_nszx40 = new TH2F("h_nszx40","zx of hit not scint",5000,3100,5200,1000,-1200,1200);
+  TH2F* h_nszx41 = new TH2F("h_nszx41","zx of hit not scint",5000,3100,5200,1000,-1200,1200);
+  TH2F* h_nszx42 = new TH2F("h_nszx42","zx of hit not scint",5000,3100,5200,1000,-1200,1200);
+  TH2F* h_nszx43 = new TH2F("h_nszx43","zx of hit not scint",5000,3100,5200,1000,-1200,1200);
+  TH2F* h_nszx44 = new TH2F("h_nszx44","zx of hit not scint",5000,3100,5200,1000,-1200,1200);
+  TH2F* h_nszx45 = new TH2F("h_nszx45","zx of hit not scint",5000,3100,5200,1000,-1200,1200);
+  TH2F* h_nszx46 = new TH2F("h_nszx46","zx of hit not scint",5000,3100,5200,1000,-1200,1200);
+  TH2F* h_nszx47 = new TH2F("h_nszx47","zx of hit not scint",5000,3100,5200,1000,-1200,1200);
+  TH2F* h_nszx48 = new TH2F("h_nszx48","zx of hit not scint",5000,3100,5200,1000,-1200,1200);
+  TH2F* h_nszx49 = new TH2F("h_nszx49","zx of hit not scint",5000,3100,5200,1000,-1200,1200);
+  TH2F* h_nszx50 = new TH2F("h_nszx50","zx of hit not scint",5000,3100,5200,1000,-1200,1200);
+  TH2F* h_nszx51 = new TH2F("h_nszx51","zx of hit not scint",5000,3100,5200,1000,-1200,1200);
+
+  TH2F* h_szx36 = new TH2F("h_szx36","zx of hit scint",5000,3100,5200,1000,-1200,1200);
+  TH2F* h_szx37 = new TH2F("h_szx37","zx of hit scint",5000,3100,5200,1000,-1200,1200);
+  TH2F* h_szx38 = new TH2F("h_szx38","zx of hit scint",5000,3100,5200,1000,-1200,1200);
+  TH2F* h_szx39 = new TH2F("h_szx39","zx of hit scint",5000,3100,5200,1000,-1200,1200);
+  TH2F* h_szx40 = new TH2F("h_szx40","zx of hit scint",5000,3100,5200,1000,-1200,1200);
+  TH2F* h_szx41 = new TH2F("h_szx41","zx of hit scint",5000,3100,5200,1000,-1200,1200);
+  TH2F* h_szx42 = new TH2F("h_szx42","zx of hit scint",5000,3100,5200,1000,-1200,1200);
+  TH2F* h_szx43 = new TH2F("h_szx43","zx of hit scint",5000,3100,5200,1000,-1200,1200);
+  TH2F* h_szx44 = new TH2F("h_szx44","zx of hit scint",5000,3100,5200,1000,-1200,1200);
+  TH2F* h_szx45 = new TH2F("h_szx45","zx of hit scint",5000,3100,5200,1000,-1200,1200);
+  TH2F* h_szx46 = new TH2F("h_szx46","zx of hit scint",5000,3100,5200,1000,-1200,1200);
+  TH2F* h_szx47 = new TH2F("h_szx47","zx of hit scint",5000,3100,5200,1000,-1200,1200);
+  TH2F* h_szx48 = new TH2F("h_szx48","zx of hit scint",5000,3100,5200,1000,-1200,1200);
+  TH2F* h_szx49 = new TH2F("h_szx49","zx of hit scint",5000,3100,5200,1000,-1200,1200);
+  TH2F* h_szx50 = new TH2F("h_szx50","zx of hit scint",5000,3100,5200,1000,-1200,1200);
+  TH2F* h_szx51 = new TH2F("h_szx51","zx of hit scint",5000,3100,5200,1000,-1200,1200);
+
+  
+  ///////////END///////////
 
   TH2F* h_nsxy36 = new TH2F("h_nsxy36","xy of hit not scint",1000,-1200,1200,1000,-1200,1200);
   TH2F* h_nsxy37 = new TH2F("h_nsxy37","xy of hit not scint",1000,-1200,1200,1000,-1200,1200);
@@ -318,15 +382,18 @@ int main(int argc, char** argv){//main
   TH2F* h_sxy51 = new TH2F("h_sxy51","xy of hit scint",1000,-1200,1200,1000,-1200,1200);
 
   TH2F* h_Egenreco = new TH2F("h_Egenreco","E reco sum versus gen",1000,0.,1000.,100,0.,20.);
-  TH1F* h_egenreco = new TH1F("h_egenreco","E reco sum over gen",100,0.,20.);
+  TH1F* h_egenreco = new TH1F("h_egenreco","E reco sum over gen",100,0.,2.);//changed from 20 to 2
 
 
-  TH2F* h_EpCone = new TH2F("h_EpCone","Ereco/gen versus cone size",10,0.,1.,100,0.,20.);
-  TH2F* h_EpPhi = new TH2F("h_EpPhi","Ereco/gen versus phi",100,-4.,4.,100,0.,20.);
+  TH2F* h_EpCone = new TH2F("h_EpCone","Ereco/gen versus cone size",10,0.,1.,100,0.,2.); // changed from 20 to 2 do to e weighting 
+  TH2F* h_EpPhi = new TH2F("h_EpPhi","Ereco/gen versus phi",100,-4.,4.,100,0.,2.); // changed from 20 to 2 
   TH2F* h_etagenmax= new TH2F("h_etagenmax","eta gen vs max",100,1.,5.,100,1.,5.);
   TH2F* h_phigenmax= new TH2F("h_phigenmax","phi gen vs max",100,-4,4.,100,-4.,4.);
-  TH1F* h_maxE = new TH1F("h_maxE","energy of highest energy hit",1000,0.,5000.);
-  TH1F* h_ECone03 = new TH1F("h_ECone03","Sum energy cone 03",1000,0.,50000.);
+  TH1F* h_maxE = new TH1F("h_maxE","energy of highest energy hit",1000,0.,1000.);// changed from 5000 to 1000
+  TH1F* h_ECone03 = new TH1F("h_ECone03","Sum energy cone 03",1000,0.,500.);// changed from 50000 to 500
+  // histos from sarahs code //
+  TH2F* h_banana = new TH2F("h_banana","banana plot",1000,0.,500.,1000,0.,500.);
+  TH1F* h_fracBH = new TH1F("h_fracBH","fraction in BH",100,-01.,1.1);
   
   ///////////////////////////////////////////////////////
   //////////////////  start event loop
@@ -340,7 +407,8 @@ int main(int argc, char** argv){//main
 
   const unsigned nEvts = ((pNevts > lSimTree->GetEntries() || pNevts==0) ? static_cast<unsigned>(lSimTree->GetEntries()) : pNevts) ;
 
-  if (debug>1) std::cout << " -- Processing " << nEvts << " events out of " << lSimTree->GetEntries() << " " << lRecTree->GetEntries() << std::endl;
+  std::cout << " -- Processing " << nEvts << " events out of " << lSimTree->GetEntries() << " " << lRecTree->GetEntries() << std::endl;
+
 
   //loop on events
   HGCSSEvent * event = 0;
@@ -366,11 +434,17 @@ int main(int argc, char** argv){//main
 
   unsigned ievtRec = 0;
   unsigned nSkipped = 0;
-  for (unsigned ievt(0); ievt<nEvts; ++ievt){//loop on entries
+  std::vector<double> absW; // from Sarah's code fill with weight
+  bool firstEvent = true;
+
+  // ---------- Event loop starts ----------
+
+   for (unsigned ievt(0); ievt<nEvts; ++ievt){//loop on entries
+  //for (unsigned ievt(0);ievt<100;++ievt){ // just lookings at the first 100 events for now
     if (ievtRec>=lRecTree->GetEntries()) continue;
 
 
-    if (debug>1) std::cout << std::endl<<std::endl<<"... Processing entry: " << ievt << std::endl;
+    if (debug) std::cout << std::endl<<std::endl<<"... Processing entry: " << ievt << std::endl;
     else if (ievt%50 == 0) std::cout << "... Processing entry: " << ievt << std::endl;
 
 
@@ -381,6 +455,30 @@ int main(int argc, char** argv){//main
       nSkipped++;
       continue;
     }
+    // start getting filling our weighting (from Sarah)
+
+    if(firstEvent) {
+      firstEvent=false;
+      //std::cout<<" size of ssvec of weights is "<<(*ssvec).size()<<std::endl;
+      double absweight=0;      
+      for (unsigned iL(0); iL<(*ssvec).size();++iL){
+	if(iL<((*ssvec).size()-1)) {
+	  unsigned next=iL+1;
+	  absweight=(((*ssvec)[iL].voldEdx())+((*ssvec)[next].voldEdx()))/2. ;
+	} else{
+	  absweight+=(*ssvec)[iL].voldEdx()  ;
+	}
+	absW.push_back(absweight);
+	absweight=0;
+      }
+      std::cout << " -- AbsWeight size: " << absW.size() << std::endl;
+      std::cout<<" values are ";
+      for (unsigned iL(0); iL<(*ssvec).size();++iL){
+	std::cout<<" "<<absW[iL];
+      }
+      std::cout<<std::endl;
+    }
+    // end of weightings
 
     double ptgen=-1.;
     double Egen=-1.;
@@ -390,8 +488,10 @@ int main(int argc, char** argv){//main
     double etagen=99999.;
     double phigen=99999.;
     int pidgen=-1;
+    double massgen= -1;
     if((*genvec).size()>0) {
       pidgen=(*genvec)[0].pdgid();
+      massgen=(*genvec)[0].mass();
       ptgenpx=(*genvec)[0].px()/1000.;
       ptgenpy=(*genvec)[0].py()/1000.;
       ptgenpz=(*genvec)[0].pz()/1000.;
@@ -405,28 +505,29 @@ int main(int argc, char** argv){//main
       //if(phigen<0) phigen=2.*TMath::Pi()+phigen;
     }
     h_getaphi->Fill(etagen,phigen);
-    if(debug>2) {
+    if(debug) {
       std::cout<<" gen vec size is "<<(*genvec).size()<<std::endl;
-      std::cout<<" first gen "<<ptgen<<" "<<Egen<<" "<<pidgen<<" "<<etagen<<" "<<phigen<<std::endl;
+      std::cout<<" first gen   pt  "<<ptgen<<" egen  "<<Egen<<" pidgen  "<<pidgen<<" etagen  "<<etagen<<" phi gen "<<phigen<<  "mass gen "<< massgen<<std::endl;
       for (unsigned iP(0); iP<(*genvec).size(); ++iP){
-        std::cout<<" gen particle "<<iP<<" is "<<(*genvec)[iP].pdgid()<<std::endl;
+        std::cout<<" gen particle "<<iP<<" is (pdgid) "<<(*genvec)[iP].pdgid()<<std::endl;
       }
     }
 
+
     bool isScint = false;
-    if (debug>2) std::cout << " - Event contains " << (*rechitvec).size() << " rechits." << std::endl;
-    if (debug>2) std::cout << " - Event contains " << (*simhitvec).size() << " simhits." << std::endl;
+    if (debug) std::cout << " - Event contains " << (*rechitvec).size() << " rechits." << std::endl;
 
     // make some simple plots about all the rechits
     unsigned iMax=-1;
     double MaxE=-1.;
+
+    // ---------- Rechit loop starts ----------
+
     for (unsigned iH(0); iH<(*rechitvec).size(); ++iH){//loop on hits
       HGCSSRecoHit lHit = (*rechitvec)[iH];
       double leta = lHit.eta();
-      ROOT::Math::XYZPoint p = lHit.position();
-      if (p.x()>1000000000.) std::cout << iH << " " << p.x() << std::endl;
       unsigned layer = lHit.layer();
-      if(lHit.energy()>MaxE) {MaxE=lHit.energy(); iMax=iH;}
+      if (lHit.energy()>MaxE) {MaxE=lHit.energy(); iMax=iH;}
       if (debug>20) std::cout << " -- hit " << iH << " eta " << leta << std::endl; 
 
       const HGCSSSubDetector & subdet = myDetector.subDetectorByLayer(layer);
@@ -436,6 +537,21 @@ int main(int argc, char** argv){//main
       unsigned cellid = map->FindBin(lHit.get_x(),lHit.get_y());
       geomConv.fill(lHit.layer(),lHit.energy(),0,cellid,lHit.get_z());
 
+      if (lHit.energy()>1000.) std::cout << "reco energy"<< lHit.energy() << std::endl;
+      //std::cout << "x "<< lHit.get_x() << "\t y "<<lHit.get_y() << "\t z" << lHit.get_z()<< std::endl; // added by Bryan, prints out xyz of each reco hit
+      //std::cout<<"reco energy " << lHit.energy()<< " reco eta "<<lHit.eta()<< " reco phi " << lHit.phi() << " reco layer " << lHit.layer()<<" reco noise ratio "<< lHit.noiseFraction()<<std::endl;
+
+      double lenergy=lHit.energy()*absW[layer]/1000.; // weight added (from Sarah's code)
+      double r_hit = sqrt(lHit.get_x()*lHit.get_x()+lHit.get_y()*lHit.get_y());
+      
+      // printf added by bryan
+      printf("|| reco hit# %d  \t",iH);
+      printf("| reco energy = %f \t",lHit.energy());
+      printf("| reco weighted E = %f \t", lenergy);
+      printf("| reco eta = %f \t",lHit.eta());
+      printf("| reco phi = %f \t",lHit.phi());
+      printf("| reco layer = %d \t",lHit.layer());
+      printf("| reco noise ratio = %f\t ||\n ",lHit.noiseFraction());
 
       h_energy->Fill(lHit.energy());
       h_z->Fill(lHit.get_z());
@@ -447,72 +563,288 @@ int main(int argc, char** argv){//main
       h_zl->Fill(lHit.get_z(),ixx);
       h_l2->Fill(lHit.layer()+0.5);
       h_xy->Fill(lHit.get_x(),lHit.get_y());
+      h_zr->Fill(lHit.get_z(),r_hit); // added by Bryan
+      h_zx->Fill(lHit.get_z(),lHit.get_x()); //added by Bryan
+      h_yz->Fill(lHit.get_z(),lHit.get_y()); //added by Bryan
+      h_zx1->Fill(lHit.get_z(),lHit.get_x()); //added by Bryan
+      h_yz1->Fill(lHit.get_z(),lHit.get_y()); //added by Bryan
+      h_zx2->Fill(lHit.get_z(),lHit.get_x()); //added by Bryan
+      h_yz2->Fill(lHit.get_z(),lHit.get_y()); //added by Bryan
+      h_zx10000->Fill(lHit.get_z(),lHit.get_x());//added by Bryan
+      h_zx1000->Fill(lHit.get_z(),lHit.get_x());//added by Bryan
+      h_xyz->Fill(lHit.get_x(),lHit.get_y(),lHit.get_z());// added by Bryan
       h_etaphi->Fill(lHit.eta(),lHit.phi());
+      if(isScint)
+	{
+	  h_sxy->Fill(lHit.get_x(),lHit.get_y());
+	  h_szx->Fill(lHit.get_z(),lHit.get_x());
+	}
+      else
+	{
+	  h_nsxy->Fill(lHit.get_x(),lHit.get_y());
+	  h_nszx->Fill(lHit.get_z(),lHit.get_x());
+	}
+      
+
       int ilayer = ixx;
 
+      // added in zx comps. Bryan//////
+
       if(ilayer==36) {
-	if(isScint) h_sxy36->Fill(lHit.get_x(),lHit.get_y());
-	else h_nsxy36->Fill(lHit.get_x(),lHit.get_y());
+	if(isScint)
+	  {
+	    h_sxy36->Fill(lHit.get_x(),lHit.get_y());
+	    h_szx36->Fill(lHit.get_z(),lHit.get_x());
+	    h_szxl->Fill(lHit.get_z(),lHit.get_x());
+	    h_sxyl->Fill(lHit.get_x(),lHit.get_y());
+	  }
+	else 
+	  { 
+	    h_nsxy36->Fill(lHit.get_x(),lHit.get_y());
+	    h_nszx36->Fill(lHit.get_z(),lHit.get_x());
+	    h_nszxl->Fill(lHit.get_z(),lHit.get_x());
+	    h_nsxyl->Fill(lHit.get_x(),lHit.get_y());
+	  }
       };
       if(ilayer==37) {
-	if(isScint) h_sxy37->Fill(lHit.get_x(),lHit.get_y());
-	else h_nsxy37->Fill(lHit.get_x(),lHit.get_y());
+	if(isScint)
+	  {
+	    h_sxy37->Fill(lHit.get_x(),lHit.get_y());
+	    h_szx37->Fill(lHit.get_z(),lHit.get_x());
+	    h_szxl->Fill(lHit.get_z(),lHit.get_x());
+	    h_sxyl->Fill(lHit.get_x(),lHit.get_y());
+	  }
+	else
+	  {
+	    h_nsxy37->Fill(lHit.get_x(),lHit.get_y());
+	    h_nszx37->Fill(lHit.get_z(),lHit.get_x());
+	    h_nszxl->Fill(lHit.get_z(),lHit.get_x());
+	    h_nsxyl->Fill(lHit.get_x(),lHit.get_y());
+	  }
       };
       if(ilayer==38) {
-	if(isScint) h_sxy38->Fill(lHit.get_x(),lHit.get_y());
-	else h_nsxy38->Fill(lHit.get_x(),lHit.get_y());
+	if(isScint)
+	  {
+	    h_sxy38->Fill(lHit.get_x(),lHit.get_y());
+	    h_szx38->Fill(lHit.get_z(),lHit.get_x());
+	    h_szxl->Fill(lHit.get_z(),lHit.get_x());
+	    h_sxyl->Fill(lHit.get_x(),lHit.get_y());
+	  }
+	else
+	  {
+	    h_nsxy38->Fill(lHit.get_x(),lHit.get_y());
+	    h_nszx38->Fill(lHit.get_z(),lHit.get_x());
+	    h_nszxl->Fill(lHit.get_z(),lHit.get_x());
+	    h_nsxyl->Fill(lHit.get_x(),lHit.get_y());
+	  }
       };
       if(ilayer==39) {
-	if(isScint) h_sxy39->Fill(lHit.get_x(),lHit.get_y());
-	else h_nsxy39->Fill(lHit.get_x(),lHit.get_y());
+	if(isScint)
+	  {
+	    h_sxy39->Fill(lHit.get_x(),lHit.get_y());
+	    h_szx39->Fill(lHit.get_z(),lHit.get_x());
+	    h_szxl->Fill(lHit.get_z(),lHit.get_x());
+	    h_sxyl->Fill(lHit.get_x(),lHit.get_y());
+	  }
+	else
+	  {
+	    h_nsxy39->Fill(lHit.get_x(),lHit.get_y());
+	    h_nszx39->Fill(lHit.get_z(),lHit.get_x());
+	    h_nszxl->Fill(lHit.get_z(),lHit.get_x());
+	    h_nsxyl->Fill(lHit.get_x(),lHit.get_y());
+	  }
       };
       if(ilayer==40) {
-	if(isScint) h_sxy40->Fill(lHit.get_x(),lHit.get_y());
-	else h_nsxy40->Fill(lHit.get_x(),lHit.get_y());
+	if(isScint)
+	  {
+	    h_sxy40->Fill(lHit.get_x(),lHit.get_y());
+	    h_szx40->Fill(lHit.get_z(),lHit.get_x());
+	    h_szxl->Fill(lHit.get_z(),lHit.get_x());
+	    h_sxyl->Fill(lHit.get_x(),lHit.get_y());
+	  }
+	else
+	  {
+	    h_nsxy40->Fill(lHit.get_x(),lHit.get_y());
+	    h_nszx40->Fill(lHit.get_z(),lHit.get_x());
+	    h_nszxl->Fill(lHit.get_z(),lHit.get_x());
+	    h_nsxyl->Fill(lHit.get_x(),lHit.get_y());
+	  }
       };
       if(ilayer==41) {
-	if(isScint) h_sxy41->Fill(lHit.get_x(),lHit.get_y());
-	else h_nsxy41->Fill(lHit.get_x(),lHit.get_y());
+	if(isScint)
+	  {
+	    h_sxy41->Fill(lHit.get_x(),lHit.get_y());
+	    h_szx41->Fill(lHit.get_z(),lHit.get_x());
+	    h_szxl->Fill(lHit.get_z(),lHit.get_x());
+	    h_sxyl->Fill(lHit.get_x(),lHit.get_y());
+	  }
+	else
+	  {
+	    h_nsxy41->Fill(lHit.get_x(),lHit.get_y());
+	    h_nszx41->Fill(lHit.get_z(),lHit.get_x());
+	    h_nszxl->Fill(lHit.get_z(),lHit.get_x());
+	    h_nsxyl->Fill(lHit.get_x(),lHit.get_y());
+	  }
       };
       if(ilayer==42) {
-	if(isScint) h_sxy42->Fill(lHit.get_x(),lHit.get_y());
-	else h_nsxy42->Fill(lHit.get_x(),lHit.get_y());
+	if(isScint)
+	  {
+	    h_sxy42->Fill(lHit.get_x(),lHit.get_y());
+	    h_szx42->Fill(lHit.get_z(),lHit.get_x());
+	    h_szxl->Fill(lHit.get_z(),lHit.get_x());
+	    h_sxyl->Fill(lHit.get_x(),lHit.get_y());
+	  }
+	else
+	  {
+	    h_nsxy42->Fill(lHit.get_x(),lHit.get_y());
+	    h_nszx42->Fill(lHit.get_z(),lHit.get_x());
+	    h_nszxl->Fill(lHit.get_z(),lHit.get_x());
+	    h_nsxyl->Fill(lHit.get_x(),lHit.get_y());
+	  }
       };
       if(ilayer==43) {
-	if(isScint) h_sxy43->Fill(lHit.get_x(),lHit.get_y());
-	else h_nsxy43->Fill(lHit.get_x(),lHit.get_y());
+	if(isScint)
+	  {
+	    h_sxy43->Fill(lHit.get_x(),lHit.get_y());
+	    h_szx43->Fill(lHit.get_z(),lHit.get_x());
+	    h_szxl->Fill(lHit.get_z(),lHit.get_x());
+	    h_sxyl->Fill(lHit.get_x(),lHit.get_y());
+	  }
+	else
+	  {
+	    h_nsxy43->Fill(lHit.get_x(),lHit.get_y());
+	    h_nszx43->Fill(lHit.get_z(),lHit.get_x());
+	    h_nszxl->Fill(lHit.get_z(),lHit.get_x());
+	    h_nsxyl->Fill(lHit.get_x(),lHit.get_y());
+	  }
       };
       if(ilayer==44) {
-	if(isScint) h_sxy44->Fill(lHit.get_x(),lHit.get_y());
-	else h_nsxy44->Fill(lHit.get_x(),lHit.get_y());
+	if(isScint)
+	  {
+	    h_sxy44->Fill(lHit.get_x(),lHit.get_y());
+	    h_szx44->Fill(lHit.get_z(),lHit.get_x());
+	    h_szxl->Fill(lHit.get_z(),lHit.get_x());
+	    h_sxyl->Fill(lHit.get_x(),lHit.get_y());
+	  }
+	else
+	  {
+	    h_nsxy44->Fill(lHit.get_x(),lHit.get_y());
+	    h_nszx44->Fill(lHit.get_z(),lHit.get_x());
+	    h_nszxl->Fill(lHit.get_z(),lHit.get_x());
+	    h_nsxyl->Fill(lHit.get_x(),lHit.get_y());
+	  }
       };
       if(ilayer==45) {
-	if(isScint) h_sxy45->Fill(lHit.get_x(),lHit.get_y());
-	else h_nsxy45->Fill(lHit.get_x(),lHit.get_y());
+	if(isScint)
+	  {
+	    h_sxy45->Fill(lHit.get_x(),lHit.get_y());
+	    h_szx45->Fill(lHit.get_z(),lHit.get_x());
+	    h_szxl->Fill(lHit.get_z(),lHit.get_x());
+	    h_sxyl->Fill(lHit.get_x(),lHit.get_y());
+	  }
+	else
+	  {
+	    h_nsxy45->Fill(lHit.get_x(),lHit.get_y());
+	    h_nszx45->Fill(lHit.get_z(),lHit.get_x());
+	    h_nszxl->Fill(lHit.get_z(),lHit.get_x());
+	    h_nsxyl->Fill(lHit.get_x(),lHit.get_y());
+	  }
       };
       if(ilayer==46) {
-	if(isScint) h_sxy46->Fill(lHit.get_x(),lHit.get_y());
-	else h_nsxy46->Fill(lHit.get_x(),lHit.get_y());
+	if(isScint)
+	  {
+	    h_sxy46->Fill(lHit.get_x(),lHit.get_y());
+	    h_szx46->Fill(lHit.get_z(),lHit.get_x());
+	    h_szxl->Fill(lHit.get_z(),lHit.get_x());
+	    h_sxyl->Fill(lHit.get_x(),lHit.get_y());
+	  }
+	else
+	  {
+	    h_nsxy46->Fill(lHit.get_x(),lHit.get_y());
+	    h_nszx46->Fill(lHit.get_z(),lHit.get_x());
+	    h_nszxl->Fill(lHit.get_z(),lHit.get_x());
+	    h_nsxyl->Fill(lHit.get_x(),lHit.get_y());
+	  }
       };
       if(ilayer==47) {
-	if(isScint) h_sxy47->Fill(lHit.get_x(),lHit.get_y());
-	else h_nsxy47->Fill(lHit.get_x(),lHit.get_y());
+	if(isScint)
+	  {
+	    h_sxy47->Fill(lHit.get_x(),lHit.get_y());
+	    h_szx47->Fill(lHit.get_z(),lHit.get_x());
+	    h_szxl->Fill(lHit.get_z(),lHit.get_x());
+	    h_sxyl->Fill(lHit.get_x(),lHit.get_y());
+	  }
+	else
+	  {
+	    h_nsxy47->Fill(lHit.get_x(),lHit.get_y());
+	    h_nszx47->Fill(lHit.get_z(),lHit.get_x());
+	    h_nszxl->Fill(lHit.get_z(),lHit.get_x());
+	    h_nsxyl->Fill(lHit.get_x(),lHit.get_y());
+	  }
       };
       if(ilayer==48) {
-	if(isScint) h_sxy48->Fill(lHit.get_x(),lHit.get_y());
-	else h_nsxy48->Fill(lHit.get_x(),lHit.get_y());
+	if(isScint)
+	  {
+	    h_sxy48->Fill(lHit.get_x(),lHit.get_y());
+	    h_szx48->Fill(lHit.get_z(),lHit.get_x());
+	    h_szxl->Fill(lHit.get_z(),lHit.get_x());
+	    h_sxyl->Fill(lHit.get_x(),lHit.get_y());
+	  }
+	else
+	  {
+	    h_nsxy48->Fill(lHit.get_x(),lHit.get_y());
+	    h_nszx48->Fill(lHit.get_z(),lHit.get_x());
+	    h_nszxl->Fill(lHit.get_z(),lHit.get_x());
+	    h_nsxyl->Fill(lHit.get_x(),lHit.get_y());
+	  }
       };
       if(ilayer==49) {
-	if(isScint) h_sxy49->Fill(lHit.get_x(),lHit.get_y());
-	else h_nsxy49->Fill(lHit.get_x(),lHit.get_y());
+	if(isScint)
+	  {
+	    h_sxy49->Fill(lHit.get_x(),lHit.get_y());
+	    h_szx49->Fill(lHit.get_z(),lHit.get_x());
+	    h_szxl->Fill(lHit.get_z(),lHit.get_x());
+	    h_sxyl->Fill(lHit.get_x(),lHit.get_y());
+	  }
+	else
+	  {
+	    h_nsxy49->Fill(lHit.get_x(),lHit.get_y());
+	    h_nszx49->Fill(lHit.get_z(),lHit.get_x());
+	    h_nszxl->Fill(lHit.get_z(),lHit.get_x());
+	    h_nsxyl->Fill(lHit.get_x(),lHit.get_y());
+	  }
       };
       if(ilayer==50) {
-	if(isScint) h_sxy50->Fill(lHit.get_x(),lHit.get_y());
-	else h_nsxy50->Fill(lHit.get_x(),lHit.get_y());
+	if(isScint)
+	  {
+	    h_sxy50->Fill(lHit.get_x(),lHit.get_y());
+	    h_szx50->Fill(lHit.get_z(),lHit.get_x());
+	    h_szxl->Fill(lHit.get_z(),lHit.get_x());
+	    h_sxyl->Fill(lHit.get_x(),lHit.get_y());
+	  }
+	else
+	  {
+	    h_nsxy50->Fill(lHit.get_x(),lHit.get_y());
+	    h_nszx50->Fill(lHit.get_z(),lHit.get_x());
+	    h_nszxl->Fill(lHit.get_z(),lHit.get_x());
+	    h_nsxyl->Fill(lHit.get_x(),lHit.get_y());
+	  }
       };
       if(ilayer==51) {
-	if(isScint) h_sxy51->Fill(lHit.get_x(),lHit.get_y());
-	else h_nsxy51->Fill(lHit.get_x(),lHit.get_y());
+	if(isScint)
+	  {
+	    h_sxy51->Fill(lHit.get_x(),lHit.get_y());
+	    h_szx51->Fill(lHit.get_z(),lHit.get_x());
+	    h_szxl->Fill(lHit.get_z(),lHit.get_x());
+	    h_sxyl->Fill(lHit.get_x(),lHit.get_y());
+	  }
+	else
+	  {
+	    h_nsxy51->Fill(lHit.get_x(),lHit.get_y());
+	    h_nszx51->Fill(lHit.get_z(),lHit.get_x());
+	    h_nszxl->Fill(lHit.get_z(),lHit.get_x());
+	    h_nsxyl->Fill(lHit.get_x(),lHit.get_y());
+	  }
       };
 
 
@@ -535,6 +867,11 @@ int main(int argc, char** argv){//main
     double rechitsumE03=0.;
     double rechitsumE04=0.;
     double rechitsumE05=0.;
+    double rechitBHsumE01=0.;// if a rechit is part of the scint 
+    double rechitBHsumE02=0.;
+    double rechitBHsumE03=0.;
+    double rechitBHsumE04=0.;
+    double rechitBHsumE05=0.;
     double etaW=0.;
     double phiW=0.;
     double norm=0.;
@@ -548,7 +885,7 @@ int main(int argc, char** argv){//main
       double leta = lHit.eta();
       double lphi = lHit.phi();
       //if(lphi<0) lphi=2.*TMath::Pi()+lphi;
-      double lenergy=lHit.energy();
+      double lenergy=lHit.energy()*absW[layer]/1000.; // weight added (from Sarah's code)
       if (debug>20) std::cout << " -- hit " << iH << " et eta phi " << lenergy<<" "<<leta << " "<< lphi<<std::endl; 
 	//clean up rechit collection
 
@@ -562,11 +899,31 @@ int main(int argc, char** argv){//main
       double dR=DeltaR(etaaxis,phiaxis,leta,lphi);
       //double dR=fabs(etagen-leta);
       if(debug>20) std::cout<<" dR "<<dR<<" "<<etagen<<" "<<phigen<<" "<<leta<<" "<<lphi<<std::endl;
-      if(dR<0.1)  rechitsumE01+=lenergy;
-      if(dR<0.2)  rechitsumE02+=lenergy;      
-      if(dR<0.3)  rechitsumE03+=lenergy;
-      if(dR<0.4)  rechitsumE04+=lenergy;
-      if(dR<0.5)  rechitsumE05+=lenergy;
+      if(dR<0.1)
+	{
+	  rechitsumE01+=lenergy;
+	  if (isScint) rechitBHsumE01+=lenergy;
+	}
+      if(dR<0.2)
+	{
+	  rechitsumE02+=lenergy;
+	  if (isScint) rechitBHsumE02+=lenergy;
+	}
+      if(dR<0.3)
+	{
+	  rechitsumE03+=lenergy;
+	  if (isScint) rechitBHsumE03+=lenergy;
+	}
+      if(dR<0.4)
+	{
+	  rechitsumE04+=lenergy;
+	  if (isScint) rechitBHsumE04+=lenergy;
+	}
+      if(dR<0.5)
+	{
+	  rechitsumE05+=lenergy;
+	  if (isScint) rechitBHsumE05+=lenergy;
+	}
 
     }//loop on hits
     if(debug>1) {
@@ -574,15 +931,22 @@ int main(int argc, char** argv){//main
     }
     if(debug>5) std::cout<<"weighted eta phi are "<<etaW/norm<<" "<<phiW/norm<<std::endl;
 
-    h_Egenreco->Fill(Egen,rechitsumE05/Egen);
-    h_egenreco->Fill(rechitsumE05/Egen);
-    h_EpPhi->Fill(phigen,rechitsumE02/Egen);
+    if (MaxE>energy_max) energy_max=MaxE;
+
+    h_Egenreco->Fill(Egen,rechitsumE03/Egen);// changed from 5 to 3
+    h_egenreco->Fill(rechitsumE03/Egen); // changed from 5 to 3
+    h_EpPhi->Fill(phigen,rechitsumE03/Egen); // changed from 2 to 3
     h_EpCone->Fill(0.1,rechitsumE01/Egen);
     h_EpCone->Fill(0.2,rechitsumE02/Egen);
     h_EpCone->Fill(0.3,rechitsumE03/Egen);
     h_EpCone->Fill(0.4,rechitsumE04/Egen);
     h_EpCone->Fill(0.5,rechitsumE05/Egen);
     
+    h_banana->Fill(rechitsumE03-rechitBHsumE03,rechitBHsumE03); // added from sarah's code
+    double frac =-0.05; // from sarah
+    double notBH=rechitsumE03-rechitBHsumE03; // from sarah unused 
+    if(rechitsumE03>0) frac=rechitBHsumE03/rechitsumE03; // from sarah
+    h_fracBH->Fill(frac); // from sarah
 
     h_ECone03->Fill(rechitsumE03);
       //miptree->Fill();
@@ -590,6 +954,11 @@ int main(int argc, char** argv){//main
     geomConv.initialiseHistos();
     ievtRec++;
   }//loop on entries
+  // ---------- Event loop ends ----------
+
+  std::cout<< "max energy "<< energy_max << std::endl;
+
+  std::cout<<" size of gen hits "<< (*genvec).size()<< " size of rechits " << (*rechitvec).size()<<std::endl;
 
   if(debug) std::cout<<"writing files"<<std::endl;
 
