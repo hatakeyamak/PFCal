@@ -340,8 +340,7 @@ int main(int argc, char** argv){//main
 
   const unsigned nEvts = ((pNevts > lSimTree->GetEntries() || pNevts==0) ? static_cast<unsigned>(lSimTree->GetEntries()) : pNevts) ;
 
-  std::cout << " -- Processing " << nEvts << " events out of " << lSimTree->GetEntries() << " " << lRecTree->GetEntries() << std::endl;
-
+  if (debug>1) std::cout << " -- Processing " << nEvts << " events out of " << lSimTree->GetEntries() << " " << lRecTree->GetEntries() << std::endl;
 
   //loop on events
   HGCSSEvent * event = 0;
@@ -371,7 +370,7 @@ int main(int argc, char** argv){//main
     if (ievtRec>=lRecTree->GetEntries()) continue;
 
 
-    if (debug) std::cout << std::endl<<std::endl<<"... Processing entry: " << ievt << std::endl;
+    if (debug>1) std::cout << std::endl<<std::endl<<"... Processing entry: " << ievt << std::endl;
     else if (ievt%50 == 0) std::cout << "... Processing entry: " << ievt << std::endl;
 
 
@@ -406,7 +405,7 @@ int main(int argc, char** argv){//main
       //if(phigen<0) phigen=2.*TMath::Pi()+phigen;
     }
     h_getaphi->Fill(etagen,phigen);
-    if(debug) {
+    if(debug>2) {
       std::cout<<" gen vec size is "<<(*genvec).size()<<std::endl;
       std::cout<<" first gen "<<ptgen<<" "<<Egen<<" "<<pidgen<<" "<<etagen<<" "<<phigen<<std::endl;
       for (unsigned iP(0); iP<(*genvec).size(); ++iP){
@@ -414,9 +413,9 @@ int main(int argc, char** argv){//main
       }
     }
 
-
     bool isScint = false;
-    if (debug) std::cout << " - Event contains " << (*rechitvec).size() << " rechits." << std::endl;
+    if (debug>2) std::cout << " - Event contains " << (*rechitvec).size() << " rechits." << std::endl;
+    if (debug>2) std::cout << " - Event contains " << (*simhitvec).size() << " simhits." << std::endl;
 
     // make some simple plots about all the rechits
     unsigned iMax=-1;
@@ -424,6 +423,8 @@ int main(int argc, char** argv){//main
     for (unsigned iH(0); iH<(*rechitvec).size(); ++iH){//loop on hits
       HGCSSRecoHit lHit = (*rechitvec)[iH];
       double leta = lHit.eta();
+      ROOT::Math::XYZPoint p = lHit.position();
+      if (p.x()>1000000000.) std::cout << iH << " " << p.x() << std::endl;
       unsigned layer = lHit.layer();
       if(lHit.energy()>MaxE) {MaxE=lHit.energy(); iMax=iH;}
       if (debug>20) std::cout << " -- hit " << iH << " eta " << leta << std::endl; 
