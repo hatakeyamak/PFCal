@@ -240,8 +240,8 @@ int main(int argc, char** argv){//main
   else if (shape==4) geomConv.initialiseSquareMap(calorSizeXY,10.);
 
   //square map for BHCAL
-  geomConv.initialiseSquareMap1(1.4,3.0,0,2*TMath::Pi(),0.01745);//eta phi segmentation
-  geomConv.initialiseSquareMap2(1.4,3.0,0,2*TMath::Pi(),0.02182);//eta phi segmentation
+  geomConv.initialiseSquareMap1(1.4,3.0,-1.*TMath::Pi(),TMath::Pi(),0.01745);//eta phi segmentation
+  geomConv.initialiseSquareMap2(1.4,3.0,-1.*TMath::Pi(),TMath::Pi(),0.02182);//eta phi segmentation
   std::vector<unsigned> granularity;
   granularity.resize(myDetector.nLayers(),1);
   geomConv.setGranularity(granularity);
@@ -459,7 +459,7 @@ int main(int argc, char** argv){//main
 
     if(firstEvent) {
       firstEvent=false;
-      //std::cout<<" size of ssvec of weights is "<<(*ssvec).size()<<std::endl;
+      std::cout<<" size of ssvec of weights is "<<(*ssvec).size()<<std::endl;
       double absweight=0;      
       for (unsigned iL(0); iL<(*ssvec).size();++iL){
 	if(iL<((*ssvec).size()-1)) {
@@ -545,6 +545,9 @@ int main(int argc, char** argv){//main
       double r_hit = sqrt(lHit.get_x()*lHit.get_x()+lHit.get_y()*lHit.get_y());
       
       // printf added by bryan
+      /*
+      printf("|| reco hit# e, corre, eta, phi, lyr, noiseF: %5d %6.1f %6.1f %6.1f %6.1f %3d %8.3f\n",
+	     iH,lHit.energy(),lenergy,lHit.eta(),lHit.phi(),lHit.layer(),lHit.noiseFraction());
       printf("|| reco hit# %d  \t",iH);
       printf("| reco energy = %f \t",lHit.energy());
       printf("| reco weighted E = %f \t", lenergy);
@@ -552,6 +555,7 @@ int main(int argc, char** argv){//main
       printf("| reco phi = %f \t",lHit.phi());
       printf("| reco layer = %d \t",lHit.layer());
       printf("| reco noise ratio = %f\t ||\n ",lHit.noiseFraction());
+      */
 
       h_energy->Fill(lHit.energy());
       h_z->Fill(lHit.get_z());
@@ -872,6 +876,11 @@ int main(int argc, char** argv){//main
     double rechitBHsumE03=0.;
     double rechitBHsumE04=0.;
     double rechitBHsumE05=0.;
+    double rechitsumEWoNoise01=0.;
+    double rechitsumEWoNoise02=0.;
+    double rechitsumEWoNoise03=0.;
+    double rechitsumEWoNoise04=0.;
+    double rechitsumEWoNoise05=0.;
     double etaW=0.;
     double phiW=0.;
     double norm=0.;
@@ -903,26 +912,31 @@ int main(int argc, char** argv){//main
 	{
 	  rechitsumE01+=lenergy;
 	  if (isScint) rechitBHsumE01+=lenergy;
+	  if (lHit.noiseFraction()<0.5) rechitsumEWoNoise01+=lenergy;
 	}
       if(dR<0.2)
 	{
 	  rechitsumE02+=lenergy;
 	  if (isScint) rechitBHsumE02+=lenergy;
+	  if (lHit.noiseFraction()<0.5) rechitsumEWoNoise02+=lenergy;
 	}
       if(dR<0.3)
 	{
 	  rechitsumE03+=lenergy;
 	  if (isScint) rechitBHsumE03+=lenergy;
+	  if (lHit.noiseFraction()<0.5) rechitsumEWoNoise03+=lenergy;
 	}
       if(dR<0.4)
 	{
 	  rechitsumE04+=lenergy;
 	  if (isScint) rechitBHsumE04+=lenergy;
+	  if (lHit.noiseFraction()<0.5) rechitsumEWoNoise04+=lenergy;
 	}
       if(dR<0.5)
 	{
 	  rechitsumE05+=lenergy;
 	  if (isScint) rechitBHsumE05+=lenergy;
+	  if (lHit.noiseFraction()<0.5) rechitsumEWoNoise05+=lenergy;
 	}
 
     }//loop on hits
@@ -950,6 +964,91 @@ int main(int argc, char** argv){//main
 
     h_ECone03->Fill(rechitsumE03);
       //miptree->Fill();
+
+    // ---------- Simhit loop starts ----------
+
+    double simhitsumE01=0.;
+    double simhitsumE02=0.;
+    double simhitsumE03=0.;
+    double simhitsumE04=0.;
+    double simhitsumE05=0.;
+    double simhitBHsumE01=0.;
+    double simhitBHsumE02=0.;
+    double simhitBHsumE03=0.;
+    double simhitBHsumE04=0.;
+    double simhitBHsumE05=0.;
+
+    //initialise calibration class
+    //HGCSSDigitisation myDigitiser;
+    //const unsigned interCalib = 3; // check against generation setting    
+    //myDigitiser.setIntercalibrationFactor(interCalib);
+    const unsigned nSiLayers = 2;  // this is what I see in generation, but why?
+    std::cout << "KHKH: inFilePath,bypassR,nSiLayers: " << inFilePath<<" "<<bypassR<<" "<<nSiLayers << std::endl;
+    HGCSSCalibration mycalib(inFilePath,bypassR,nSiLayers);
+
+    for (unsigned iH(0); iH<(*simhitvec).size(); ++iH){//loop on hits
+      HGCSSSimHit lHit = (*simhitvec)[iH];
+
+      unsigned layer = lHit.layer();
+      const HGCSSSubDetector & subdet = myDetector.subDetectorByLayer(layer);
+      DetectorEnum type = subdet.type;
+      isScint = subdet.isScint;
+    
+      std::pair<double,double> xy = lHit.get_xy(subdet,geomConv,shape);
+      double posx = xy.first;//lHit.get_x(cellSize);
+      double posy = xy.second;//lHit.get_y(cellSize);
+      double posz = lHit.get_z();
+      double radius = sqrt(pow(posx,2)+pow(posy,2));
+      double energy = lHit.energy()*mycalib.MeVToMip(layer,radius); // if (energy > 0) std::cout << "sim energy = "<<lHit.energy()<<", reco energy = "<<energy<<std::endl;
+      double absweight = absW[layer];
+      double realtime = mycalib.correctTime(lHit.time(),posx,posy,posz);
+      //bool passTime = myDigitiser.passTimeCut(type,realtime);
+      //if (!passTime) continue;
+      
+      ROOT::Math::XYZPoint lpos = ROOT::Math::XYZPoint(posx,posy,posz);
+      double eta = lpos.eta();
+      double phi = lpos.phi();
+      
+      double dR=DeltaR(etaaxis,phiaxis,eta,phi);
+      if(dR<0.1){ 
+	simhitsumE01+=energy*absweight/1000.;
+	if (isScint) simhitBHsumE01+=energy*absweight/1000.;
+      }
+      if(dR<0.2){
+	simhitsumE02+=energy*absweight/1000.;
+	if (isScint) simhitBHsumE02+=energy*absweight/1000.;
+      }
+      if(dR<0.3){
+	simhitsumE03+=energy*absweight/1000.;
+	if (isScint) simhitBHsumE03+=energy*absweight/1000.;
+      }
+      if(dR<0.4){
+	simhitsumE04+=energy*absweight/1000.;
+	if (isScint) simhitBHsumE04+=energy*absweight/1000.;
+      }
+      if(dR<0.5){
+	simhitsumE05+=energy*absweight/1000.;      
+	if (isScint) simhitBHsumE05+=energy*absweight/1000.;
+      }
+      //std::cout << absWeight << " " << absW[layer] << std::endl;
+
+    }
+    
+    printf("simhitsumE01,2,3:   %8.3f, %8.3f, %8.3f\n",simhitsumE01,simhitsumE02,simhitsumE03);
+    printf("rechitsumE01,2,3:   %8.3f, %8.3f, %8.3f\n",rechitsumE01,rechitsumE02,rechitsumE03);
+    printf(" (w/o noise):       %8.3f, %8.3f, %8.3f\n",rechitsumE01,rechitsumE02,rechitsumE03);
+    printf("rec/sim sumE01,2,3: %8.3f, %8.3f, %8.3f\n",rechitsumE01/simhitsumE01,rechitsumE02/simhitsumE02,
+	   rechitsumE03/simhitsumE03);
+    printf(" (w/o noise):       %8.3f, %8.3f, %8.3f\n",rechitsumEWoNoise01/simhitsumE01,
+	   rechitsumEWoNoise02/simhitsumE02,
+	   rechitsumEWoNoise03/simhitsumE03);
+    printf("simhitBHsumE01,2,3:   %8.3f, %8.3f, %8.3f\n",simhitBHsumE01,simhitBHsumE02,simhitBHsumE03);
+    printf("rechitBHsumE01,2,3:   %8.3f, %8.3f, %8.3f\n",rechitBHsumE01,rechitBHsumE02,rechitBHsumE03);
+    printf("rec/sim sumE01,2,3: %8.3f, %8.3f, %8.3f\n",rechitBHsumE01/simhitBHsumE01,
+	   rechitBHsumE02/simhitBHsumE02,
+	   rechitBHsumE03/simhitBHsumE03);
+
+    //=========
 
     geomConv.initialiseHistos();
     ievtRec++;
