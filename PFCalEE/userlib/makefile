@@ -7,6 +7,7 @@ SHELL=bash
 # Define include paths
 USERINCLUDES += -I$(ROOTSYS)/include/
 USERINCLUDES += -I$(ROOFITSYS)/include/
+USERINCLUDES += -I$(BOOSTSYS)/include/
 #USERINCLUDES += -I$(CMS_PATH)/$(SCRAM_ARCH)/external/boost/1.47.0/include/
 USERINCLUDES += -Iinclude/ -I../userlib/include/ -I$(FASTJET_INSTALL)/include/
 
@@ -71,7 +72,7 @@ $(LIBDIR)/lib$(LIBNAME).so:  $(OBJS) $(LIBDEPENDS)
 lib: $(LIBDIR)/lib$(LIBNAME).so
 
 dictionary:
-	rootcint -v -f src/dict.cc -c include/HGCSSInfo.hh include/HGCSSEvent.hh include/HGCSSSamplingSection.hh include/HGCSSSimHit.hh include/HGCSSGenParticle.hh include/HGCSSRecoHit.hh include/HGCSSRecoJet.hh include/HGCSSCluster.hh include/HGCSSMipHit.hh include/LinkDef.h
+	rootcint -v -f src/dict.cc -c include/HGCSSInfo.hh include/HGCSSEvent.hh include/HGCSSSamplingSection.hh include/HGCSSSimHit.hh include/HGCSSGenParticle.hh include/HGCSSRecoHit.hh include/HGCSSRecoJet.hh include/HGCSSCluster.hh include/HGCSSMipHit.hh include/HGCSSSimpleHit.hh include/LinkDef.h
 	sed "s/include\/HGCSS/HGCSS/" src/dict.h > include/dict.h
 	rm src/dict.h
 
