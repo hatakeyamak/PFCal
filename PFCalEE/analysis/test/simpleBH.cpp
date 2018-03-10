@@ -3,6 +3,7 @@
 #include<fstream>
 #include<sstream>
 #include<map>
+#include<utility>      // std::pair
 #include <boost/algorithm/string.hpp>
 #include "boost/lexical_cast.hpp"
 #include "boost/program_options.hpp"
@@ -199,10 +200,6 @@ int main(int argc, char** argv){//main
     return 1;
   }
 
-
-
-
-
   //assert(info);
 
   const unsigned versionNumber = info->version();
@@ -383,7 +380,7 @@ int main(int argc, char** argv){//main
 
   TH2F* h_Egenreco = new TH2F("h_Egenreco","E reco sum versus gen",1000,0.,1000.,100,0.,20.);
   TH1F* h_egenreco = new TH1F("h_egenreco","E reco sum over gen",100,0.,2.);//changed from 20 to 2
-
+  TH1F* h_egensim = new TH1F("h_egensim","E sim sum over gen",100,0.,2.);//changed from 20 to 2
 
   TH2F* h_EpCone = new TH2F("h_EpCone","Ereco/gen versus cone size",10,0.,1.,100,0.,2.); // changed from 20 to 2 do to e weighting 
   TH2F* h_EpPhi = new TH2F("h_EpPhi","Ereco/gen versus phi",100,-4.,4.,100,0.,2.); // changed from 20 to 2 
@@ -523,9 +520,13 @@ int main(int argc, char** argv){//main
 
     // ---------- Rechit loop starts ----------
 
+    std::map<std::pair<int,int>,float> mymap_rechit;
+    mymap_rechit.clear();
+
     for (unsigned iH(0); iH<(*rechitvec).size(); ++iH){//loop on hits
       HGCSSRecoHit lHit = (*rechitvec)[iH];
       double leta = lHit.eta();
+      double lphi = lHit.phi();
       unsigned layer = lHit.layer();
       if (lHit.energy()>MaxE) {MaxE=lHit.energy(); iMax=iH;}
       if (debug>20) std::cout << " -- hit " << iH << " eta " << leta << std::endl; 
@@ -543,7 +544,7 @@ int main(int argc, char** argv){//main
 
       double lenergy=lHit.energy()*absW[layer]/1000.; // weight added (from Sarah's code)
       double r_hit = sqrt(lHit.get_x()*lHit.get_x()+lHit.get_y()*lHit.get_y());
-      
+
       // printf added by bryan
       /*
       printf("|| reco hit# e, corre, eta, phi, lyr, noiseF: %5d %6.1f %6.1f %6.1f %6.1f %3d %8.3f\n",
@@ -907,6 +908,22 @@ int main(int argc, char** argv){//main
 
       double dR=DeltaR(etaaxis,phiaxis,leta,lphi);
       //double dR=fabs(etagen-leta);
+
+      TH2Poly *map = isScint?(subdet.type==DetectorEnum::BHCAL1?geomConv.squareMap1():geomConv.squareMap2()): shape==4?geomConv.squareMap() : shape==2?geomConv.diamondMap() : shape==3? geomConv.triangleMap(): geomConv.hexagonMap();
+
+      unsigned cellid = map->FindBin(lHit.get_x(),lHit.get_y());
+
+      //
+      //KH - make a map for selected rechits around gen pions and low noise fraction
+      //KH - Warning - cellid not working well for scintilator layers (so not counted)
+      //
+      if (!isScint && lHit.noiseFraction()<0.5 && dR<0.3){
+	  unsigned cellid = map->FindBin(lHit.get_x(),lHit.get_y());
+	  std::map<std::pair<int,int>, float>::iterator it = mymap_rechit.find(std::make_pair(layer,cellid)); 
+	  if (it != mymap_rechit.end()) (*it).second += lHit.energy();
+	  else mymap_rechit.insert(std::make_pair(std::make_pair(layer,cellid),lHit.energy()));
+      }
+
       if(debug>20) std::cout<<" dR "<<dR<<" "<<etagen<<" "<<phigen<<" "<<leta<<" "<<lphi<<std::endl;
       if(dR<0.1)
 	{
@@ -979,12 +996,23 @@ int main(int argc, char** argv){//main
     double simhitBHsumE05=0.;
 
     //initialise calibration class
-    //HGCSSDigitisation myDigitiser;
+    //KH - myDigitiser
+    HGCSSDigitisation myDigitiser;
     //const unsigned interCalib = 3; // check against generation setting    
     //myDigitiser.setIntercalibrationFactor(interCalib);
     const unsigned nSiLayers = 2;  // this is what I see in generation, but why?
     std::cout << "KHKH: inFilePath,bypassR,nSiLayers: " << inFilePath<<" "<<bypassR<<" "<<nSiLayers << std::endl;
     HGCSSCalibration mycalib(inFilePath,bypassR,nSiLayers);
+    mycalib.setVertex(eventRec->vtx_x(),eventRec->vtx_y(),eventRec->vtx_z());
+
+    int nhit=0, nhitscinti=0;
+    std::map<std::pair<int,int>,float> mymap_simhit; mymap_simhit.clear();
+    std::map<std::pair<int,int>,float> mymap_simhit_x; mymap_simhit_x.clear();
+    std::map<std::pair<int,int>,float> mymap_simhit_y; mymap_simhit_y.clear();
+    std::map<std::pair<int,int>,float> mymap_simhit_z; mymap_simhit_z.clear();    
+    //std::map<std::pair<int,int>,float> mymap_simhit_eta; mymap_simhit_eta.clear();
+    //std::map<std::pair<int,int>,float> mymap_simhit_phi; mymap_simhit_phi.clear();
+    std::map<std::pair<int,int>,float> mymap_simhit_MeVToMip; mymap_simhit_MeVToMip.clear();
 
     for (unsigned iH(0); iH<(*simhitvec).size(); ++iH){//loop on hits
       HGCSSSimHit lHit = (*simhitvec)[iH];
@@ -1002,14 +1030,59 @@ int main(int argc, char** argv){//main
       double energy = lHit.energy()*mycalib.MeVToMip(layer,radius); // if (energy > 0) std::cout << "sim energy = "<<lHit.energy()<<", reco energy = "<<energy<<std::endl;
       double absweight = absW[layer];
       double realtime = mycalib.correctTime(lHit.time(),posx,posy,posz);
-      //bool passTime = myDigitiser.passTimeCut(type,realtime);
-      //if (!passTime) continue;
-      
+
+      //KH - myDigitiser
+      bool passTime = myDigitiser.passTimeCut(type,realtime);
+      if (!passTime) continue;
+      if (realtime<-10.) continue;
+      if (lHit.time()==0.) continue; // remove bad timing hits
+      // This is not a rigorous timing cut, but clean some simhits which won't make visible differences in results
+
       ROOT::Math::XYZPoint lpos = ROOT::Math::XYZPoint(posx,posy,posz);
       double eta = lpos.eta();
       double phi = lpos.phi();
-      
       double dR=DeltaR(etaaxis,phiaxis,eta,phi);
+
+      if (!isScint){ // si
+	DetectorEnum adet = subdet.type;
+	unsigned adc = 0;
+	double digiE;
+	adc = myDigitiser.adcConverter(energy,type);
+	digiE = myDigitiser.adcToMIP(adc,type);	
+	if (adc<5) continue;                // ADC cut on silicon hits
+      } else {
+	if (energy<0.5) continue;           // MIP cut (>=0.5MIP) on scintilator hits
+      }
+
+      // 
+      if (layer<=51&&lHit.silayer()>=geomConv.getNumberOfSiLayers(type,radius)) continue;
+
+      nhit++;
+      if (layer>51) nhitscinti++;
+      //-----
+      /*
+      if (layer>51)
+      std::cout << "MeVToMip: " << layer << " "
+		<< radius << " "
+		<< lHit.cellid() << " "
+		<< eta << ", " << phi << ", " << dR << " " << energy << " "
+		<< mycalib.MeVToMip(layer,radius) << std::endl;
+      */
+      
+      if (!isScint && dR<0.3){
+	std::map<std::pair<int,int>, float>::iterator it = mymap_simhit.find(std::make_pair(layer,lHit.cellid())); 
+	if (it != mymap_simhit.end()){
+	  (*it).second += energy;
+	}
+	else {
+	  mymap_simhit.insert(std::make_pair(std::make_pair(layer,lHit.cellid()),energy));
+	  mymap_simhit_MeVToMip.insert(std::make_pair(std::make_pair(layer,lHit.cellid()),mycalib.MeVToMip(layer,radius)));
+	  mymap_simhit_x.insert(std::make_pair(std::make_pair(layer,lHit.cellid()),posx));
+	  mymap_simhit_y.insert(std::make_pair(std::make_pair(layer,lHit.cellid()),posy));
+	  mymap_simhit_z.insert(std::make_pair(std::make_pair(layer,lHit.cellid()),posz));
+	}
+      }
+      
       if(dR<0.1){ 
 	simhitsumE01+=energy*absweight/1000.;
 	if (isScint) simhitBHsumE01+=energy*absweight/1000.;
@@ -1033,6 +1106,88 @@ int main(int argc, char** argv){//main
       //std::cout << absWeight << " " << absW[layer] << std::endl;
 
     }
+
+    /////-----
+    /*
+    bool print_header=true;
+    for (std::map<std::pair<int,int>,float>::iterator it=mymap_simhit.begin(); it!=mymap_simhit.end(); ++it){
+      std::pair<int,int> key=it->first;
+
+      std::map<std::pair<int,int>, float>::iterator iit = mymap_rechit.find(std::make_pair(key.first,key.second)); 
+      std::map<std::pair<int,int>, float>::iterator iiit = mymap_simhit_MeVToMip.find(std::make_pair(key.first,key.second)); 
+      std::map<std::pair<int,int>, float>::iterator ix = mymap_simhit_x.find(std::make_pair(key.first,key.second)); 
+      std::map<std::pair<int,int>, float>::iterator iy = mymap_simhit_y.find(std::make_pair(key.first,key.second)); 
+      std::map<std::pair<int,int>, float>::iterator iz = mymap_simhit_z.find(std::make_pair(key.first,key.second)); 
+      double rr = pow(pow(ix->second,2)+pow(iy->second,2),0.5);
+      if (it->second>0.){
+      if (print_header){
+	printf("mymap_simhit: cellid, layer, sim E (mip) [rec E, rec/sim E, MeVToMip, rr]\n");
+	print_header=false;
+      }
+      if (iit == mymap_rechit.end()) printf("mymap_simhit: %6d %10d %10.4f\n",key.first,key.second,it->second);
+      else{ 
+	printf("mymap_simhit: %6d %10d %10.4f %10.4f %10.4f %10.4f %8.3f\n",
+	       key.first,key.second,
+	       it->second,iit->second,iit->second/it->second,iiit->second,rr);      
+	if (iit->second/it->second<0.8 && it->second>50.){
+	  
+	  for (unsigned iH(0); iH<(*simhitvec).size(); ++iH){//loop on hits
+	    HGCSSSimHit lHit = (*simhitvec)[iH];
+	    if (lHit.layer()==key.first&&lHit.cellid()==key.second){
+
+	      unsigned layer = lHit.layer();
+	      const HGCSSSubDetector & subdet = myDetector.subDetectorByLayer(layer);
+	      DetectorEnum type = subdet.type;
+	      isScint = subdet.isScint;
+	      std::pair<double,double> xy = lHit.get_xy(subdet,geomConv,shape);
+	      double posx = xy.first;//lHit.get_x(cellSize);
+	      double posy = xy.second;//lHit.get_y(cellSize);
+	      double posz = lHit.get_z();
+	      double radius = sqrt(pow(posx,2)+pow(posy,2));
+	      double energy = lHit.energy()*mycalib.MeVToMip(layer,radius);
+	      double absweight = absW[layer];
+	      double realtime = mycalib.correctTime(lHit.time(),posx,posy,posz);
+	      ROOT::Math::XYZPoint lpos = ROOT::Math::XYZPoint(posx,posy,posz);
+	      double eta = lpos.eta();
+	      double phi = lpos.phi();
+	      double dR=DeltaR(etaaxis,phiaxis,eta,phi);
+	      
+	      std::cout << "Details: " << layer << " "
+			<< radius << " "
+			<< lHit.cellid() << " "
+			<< eta << ", " << phi << ", " << dR << " " << energy << " "
+			<< realtime << " "
+			<< posx << " " << posy << " " << posz << " "
+			<< mycalib.MeVToMip(layer,radius) << std::endl;
+
+	    } // strange layer#, cell	    	   
+	  }   // loop over simhits
+	}     // reco/sim<0.8 and sim energy>50mips
+      }       // found reco/sim match
+      }
+
+      //printf("mymap_simhit.insert: %6d %10d %10.4f\n",key.first,key.second,it->second);
+    }
+    std::cout << "mymap_simhit.size: " << mymap_simhit.size() << std::endl;
+    /////-----
+    print_header=true;
+    for (std::map<std::pair<int,int>,float>::iterator it=mymap_rechit.begin(); it!=mymap_rechit.end(); ++it){
+      std::pair<int,int> key=it->first;
+      std::map<std::pair<int,int>, float>::iterator iit = mymap_simhit.find(std::make_pair(key.first,key.second)); 
+      if (it->second>0.){
+      if (print_header){
+	printf("mymap_rechit: cellid, layer, rec E (mip) [sim E, sim/rec E, MeVToMip, rr]\n");
+	print_header=false;
+      }
+      if (iit == mymap_simhit.end()) printf("mymap_rechit: %6d %10d %10.4f\n",key.first,key.second,it->second);
+      else printf("mymap_rechit: %6d %10d %10.4f %10.4f %10.4f\n",key.first,key.second,it->second,iit->second,iit->second/it->second);
+      }
+    }
+    std::cout << "mymap_rechit.size: " << mymap_rechit.size() << std::endl;
+    //std::cout << "mymap_rechit: " << it->first << " => " << it->second << '\n';
+    */
+
+    h_egensim->Fill(simhitsumE03/Egen);
     
     printf("simhitsumE01,2,3:   %8.3f, %8.3f, %8.3f\n",simhitsumE01,simhitsumE02,simhitsumE03);
     printf("rechitsumE01,2,3:   %8.3f, %8.3f, %8.3f\n",rechitsumE01,rechitsumE02,rechitsumE03);
@@ -1047,12 +1202,13 @@ int main(int argc, char** argv){//main
     printf("rec/sim sumE01,2,3: %8.3f, %8.3f, %8.3f\n",rechitBHsumE01/simhitBHsumE01,
 	   rechitBHsumE02/simhitBHsumE02,
 	   rechitBHsumE03/simhitBHsumE03);
+    std::cout << "nhit: "  << nhit << " / " << (*simhitvec).size() << " " << nhitscinti << std::endl;
 
     //=========
 
     geomConv.initialiseHistos();
     ievtRec++;
-  }//loop on entries
+   }//loop on entries
   // ---------- Event loop ends ----------
 
   std::cout<< "max energy "<< energy_max << std::endl;

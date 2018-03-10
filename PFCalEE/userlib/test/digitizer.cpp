@@ -674,6 +674,8 @@ int main(int argc, char** argv){//main
     //unsigned layer = volNb;
     
     mycalib.setVertex(lEvent.vtx_x(),lEvent.vtx_y(),lEvent.vtx_z());
+    std::cout << "mycalib.MeVToMip(11,738.100): " << mycalib.MeVToMip(11,738.100) << std::endl;
+    std::cout << "mycalib.MeVToMip(1,1040.612): " << mycalib.MeVToMip(1,1040.612) << std::endl;
 
     if (debug>0) {
       std::cout << " **DEBUG** Processing evt " << ievt << std::endl;
