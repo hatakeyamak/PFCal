@@ -17,6 +17,7 @@
 #include "TH2F.h"
 #include "TH1F.h"
 #include "TF1.h"
+#include "TProfile.h"
 #include "TStyle.h"
 #include "TCanvas.h"
 #include "TLatex.h"
@@ -284,6 +285,104 @@ int main(int argc, char** argv){//main
   /////////////////////////
   //Bryans analysis stuff//
   /////////////////////////
+  TProfile* h_el = new TProfile("h_el","energy per layer",80,0,80,0,100);
+ 
+  TH2Poly* map_1 = new TH2Poly();
+  //map_1->Honeycomb(-2803.17,-2790.5,6.49635,575,497);
+  //map_1 = geomConv.hexagonMap();
+  map_1 = geomConv.hexagonMap();
+  map_1->SetTitle("map_1");
+  map_1->SetName("map_1");
+
+  //TH2Poly* map_1_0 = (TH2Poly*) map_1->Clone("map_1_0"); map_1_0->SetTitle("map_1_0");  map_1_0->SetName("map_1_0"); 
+  //TH2Poly* map_1_1 = (TH2Poly*) map_1->Clone("map_1_1"); map_1_1->SetTitle("map_1_1");  map_1_1->SetName("map_1_1");
+
+  char title[100];
+  TH2Poly* map_1_layer[52];
+  bool develop=false;
+  if (develop){
+  for (int ilayer=36;ilayer<=51;ilayer++){
+    sprintf(title,"map_1_%d",ilayer);
+    //map_1_layer[ilayer] = new TH2Poly();
+    //map_1_layer[ilayer] = geomConv.hexagonMap();
+    map_1_layer[ilayer] = (TH2Poly*)map_1->Clone(title);
+    map_1_layer[ilayer]->SetTitle(title);
+    map_1_layer[ilayer]->SetName(title);
+  }
+  }
+
+  //TH2Poly* map_2 = new TH2Poly();
+  //map_2 = geomConv.squareMap1();
+  //map_2 = geomConv.squareMap1();
+
+  //TH2Poly* map_3 = new TH2Poly();
+  //map_3 = geomConv.squareMap2();
+  //map_3 = geomConv.squareMap2();
+
+  //---- xmin = 1.4, ymin = -3.14159 side = 0.01745, nx = 91, ny=360
+  //---- xmin = 1.4, ymin = -3.14159 side = 0.02182, nx = 73, ny=287
+  double rbins2[92];
+  double rbins3[74];
+  TH2F* map_TH2F_2[4];
+  TH2F* map_TH2F_3[12];
+  double z_layer[69]={
+  3198.0,    3207.1,    3222.4,    3231.5,    3246.8,
+  3255.9,    3271.2,    3280.3,    3295.6,    3304.7,
+  3320.0,    3329.1,    3344.4,    3353.5,    3368.8,
+  3377.9,    3393.2,    3402.3,    3417.6,    3426.7,
+  3442.0,    3451.1,    3466.4,    3475.5,    3490.8,
+  3499.9,    3515.2,    3524.3,    3577.4,    3626.4,
+  3675.4,    3724.4,    3773.4,    3822.4,    3871.4,
+  3920.4,    3969.4,    4020.3,    4071.2,    4122.1,
+  4206.0,    4289.9,    4373.8,    4457.7,    4541.6,
+  4625.5,    4709.4,    4793.3,    4877.2,    4961.1,
+  5045.0,    5128.9,       0.0,    3971.2,    4022.1,
+  4073.0,    4123.9,    4207.8,    4291.7,    4375.6,
+  4459.5,    4543.4,    4627.3,    4711.2,    4795.1,
+  4879.0,    4962.9,    5046.8,    5130.7};
+
+  int eta_index[69]={
+    0,0,0,0,0, 0,0,0,0,0,
+    0,0,0,0,0, 0,0,0,0,0,
+    0,0,0,0,0, 0,0,0,0,0,
+    0,0,0,0,0, 0,0,0,0,0,
+    0,0,0,0,0, 0,0,0,0,0,
+    0,0,0,19,24, 25,30,29,32,37,
+    41,41,42,43,44, 45,45,46,47};
+
+  int bin_exclude=2;
+  double r_cut[69]; // r_cut values to exclude a few boundary hits
+
+  // BH fine part
+  for (int ilayer=36;ilayer<=39;ilayer++){
+    int ilayer_org=ilayer+17;
+    for (int ibin=0;ibin<=91;ibin++){
+      double eta=1.4+double(ibin)*0.01745;
+      double z = z_layer[ilayer_org];
+      rbins2[91-ibin]=z*tan(2.*atan(exp(-eta)));    
+    }    
+    sprintf(title,"map_TH2F_2_%d",ilayer);
+    map_TH2F_2[ilayer-36] = new TH2F(title,title,360,-1.*TMath::Pi(),3.1404,91,rbins2);
+    double eta_tmp=1.4+double(eta_index[ilayer_org]-bin_exclude)*0.01745;
+    double z_tmp = z_layer[ilayer_org];
+    r_cut[ilayer_org] = z_tmp*tan(2.*atan(exp(-eta_tmp)));    
+  }  
+  // BH coarse part
+  for (int ilayer=40;ilayer<=51;ilayer++){
+    int ilayer_org=ilayer+17;
+    for (int ibin=0;ibin<=73;ibin++){
+      double eta=1.4+double(ibin)*0.02182;
+      double z = z_layer[ilayer_org];
+      rbins3[73-ibin]=z*tan(2.*atan(exp(-eta)));    
+    }    
+    sprintf(title,"map_TH2F_3_%d",ilayer);
+    map_TH2F_3[ilayer-40] = new TH2F(title,title,287,-1.*TMath::Pi(),3.12075,73,rbins3);
+    double eta_tmp=1.4+double(eta_index[ilayer_org]-bin_exclude)*0.02182;
+    double z_tmp = z_layer[ilayer_org];
+    r_cut[ilayer_org] = z_tmp*tan(2.*atan(exp(-eta_tmp)));    
+  } 
+
+  /////////////////////////
   TH2F* h_zx = new TH2F("h_zx","zx of hit",5000,3100,5200,1000,-2000,2000);
   TH2F* h_zx10000 = new TH2F("h_zx10000","zx of hit",10000,3100,5200,1000,-2000,2000);
   TH2F* h_zx1000 = new TH2F("h_zx1000","zx of hit",1000,3100,5200,1000,-2000,2000);
@@ -305,8 +404,7 @@ int main(int argc, char** argv){//main
   TH2F* h_sxy = new TH2F("h_sxy","xy of hit scint",2000,-2000,2000,2000,-2000,2000);
   TH2F* h_nsxyl = new TH2F("h_nsxyl","xy of hit not scint (layers)",3000,-2000,2000,3000,-2000,2000);
   TH2F* h_sxyl = new TH2F("h_sxyl","xy of hit scint (layers)",3000,-2000,2000,3000,-2000,2000);
-  
-  
+    
   TH2F* h_nszx36 = new TH2F("h_nszx36","zx of hit not scint",5000,3100,5200,1000,-1200,1200);
   TH2F* h_nszx37 = new TH2F("h_nszx37","zx of hit not scint",5000,3100,5200,1000,-1200,1200);
   TH2F* h_nszx38 = new TH2F("h_nszx38","zx of hit not scint",5000,3100,5200,1000,-1200,1200);
@@ -406,7 +504,6 @@ int main(int argc, char** argv){//main
 
   std::cout << " -- Processing " << nEvts << " events out of " << lSimTree->GetEntries() << " " << lRecTree->GetEntries() << std::endl;
 
-
   //loop on events
   HGCSSEvent * event = 0;
   HGCSSEvent * eventRec = 0;
@@ -415,8 +512,6 @@ int main(int argc, char** argv){//main
   std::vector<HGCSSRecoHit> * rechitvec = 0;
   std::vector<HGCSSGenParticle> * genvec = 0;
   unsigned nPuVtx = 0;
-
-
 
   lSimTree->SetBranchAddress("HGCSSEvent",&event);
   lSimTree->SetBranchAddress("HGCSSSamplingSectionVec",&ssvec);
@@ -427,7 +522,8 @@ int main(int argc, char** argv){//main
   lRecTree->SetBranchAddress("HGCSSRecoHitVec",&rechitvec);
   if (lRecTree->GetBranch("nPuVtx")) lRecTree->SetBranchAddress("nPuVtx",&nPuVtx);
 
-
+  //KH - myDigitiser
+  HGCSSDigitisation myDigitiser;
 
   unsigned ievtRec = 0;
   unsigned nSkipped = 0;
@@ -518,6 +614,10 @@ int main(int argc, char** argv){//main
     unsigned iMax=-1;
     double MaxE=-1.;
 
+    //find rmin and rmax of rechits 
+    double rmin = 99999;
+    double rmax = -1;
+
     // ---------- Rechit loop starts ----------
 
     std::map<std::pair<int,int>,float> mymap_rechit;
@@ -537,8 +637,8 @@ int main(int argc, char** argv){//main
 
       unsigned cellid = map->FindBin(lHit.get_x(),lHit.get_y());
       geomConv.fill(lHit.layer(),lHit.energy(),0,cellid,lHit.get_z());
-
-      if (lHit.energy()>1000.) std::cout << "reco energy"<< lHit.energy() << std::endl;
+      
+      if (debug>2 && lHit.energy()>1000.) std::cout << "reco energy"<< lHit.energy() << std::endl;
       //std::cout << "x "<< lHit.get_x() << "\t y "<<lHit.get_y() << "\t z" << lHit.get_z()<< std::endl; // added by Bryan, prints out xyz of each reco hit
       //std::cout<<"reco energy " << lHit.energy()<< " reco eta "<<lHit.eta()<< " reco phi " << lHit.phi() << " reco layer " << lHit.layer()<<" reco noise ratio "<< lHit.noiseFraction()<<std::endl;
 
@@ -557,6 +657,9 @@ int main(int argc, char** argv){//main
       printf("| reco layer = %d \t",lHit.layer());
       printf("| reco noise ratio = %f\t ||\n ",lHit.noiseFraction());
       */
+
+      //if (z_layer[lHit.layer()]<1.)
+      //	z_layer[lHit.layer()] = lHit.get_z();
 
       h_energy->Fill(lHit.energy());
       h_z->Fill(lHit.get_z());
@@ -579,6 +682,25 @@ int main(int argc, char** argv){//main
       h_zx1000->Fill(lHit.get_z(),lHit.get_x());//added by Bryan
       h_xyz->Fill(lHit.get_x(),lHit.get_y(),lHit.get_z());// added by Bryan
       h_etaphi->Fill(lHit.eta(),lHit.phi());
+
+      if(!isScint && ixx == 37){
+	if(r_hit > rmax){
+	  rmax = r_hit;
+	};
+      }
+
+      if(!isScint) {
+	map_1->Fill(lHit.get_x(),lHit.get_y());
+	if (develop && ixx>=36) map_1_layer[ixx]->Fill(lHit.get_x(),lHit.get_y());
+      }
+      //if (ixx<=20) map_1_0->Fill(lHit.get_x(),lHit.get_y());
+      //else         map_1_1->Fill(lHit.get_x(),lHit.get_y());
+
+      if(isScint){ 
+	if (ixx>=36&&ixx<=39)      map_TH2F_2[ixx-36]->Fill(lHit.phi(),r_hit);
+	else if (ixx>=40&&ixx<=51) map_TH2F_3[ixx-40]->Fill(lHit.phi(),r_hit);
+      }
+
       if(isScint)
 	{
 	  h_sxy->Fill(lHit.get_x(),lHit.get_y());
@@ -997,11 +1119,11 @@ int main(int argc, char** argv){//main
 
     //initialise calibration class
     //KH - myDigitiser
-    HGCSSDigitisation myDigitiser;
+    //HGCSSDigitisation myDigitiser; // Now outside the event loop
     //const unsigned interCalib = 3; // check against generation setting    
     //myDigitiser.setIntercalibrationFactor(interCalib);
     const unsigned nSiLayers = 2;  // this is what I see in generation, but why?
-    std::cout << "KHKH: inFilePath,bypassR,nSiLayers: " << inFilePath<<" "<<bypassR<<" "<<nSiLayers << std::endl;
+    if (debug>2) std::cout << "KHKH: inFilePath,bypassR,nSiLayers: " << inFilePath<<" "<<bypassR<<" "<<nSiLayers << std::endl;
     HGCSSCalibration mycalib(inFilePath,bypassR,nSiLayers);
     mycalib.setVertex(eventRec->vtx_x(),eventRec->vtx_y(),eventRec->vtx_z());
 
@@ -1189,6 +1311,7 @@ int main(int argc, char** argv){//main
 
     h_egensim->Fill(simhitsumE03/Egen);
     
+    if (debug>2){
     printf("simhitsumE01,2,3:   %8.3f, %8.3f, %8.3f\n",simhitsumE01,simhitsumE02,simhitsumE03);
     printf("rechitsumE01,2,3:   %8.3f, %8.3f, %8.3f\n",rechitsumE01,rechitsumE02,rechitsumE03);
     printf(" (w/o noise):       %8.3f, %8.3f, %8.3f\n",rechitsumE01,rechitsumE02,rechitsumE03);
@@ -1203,6 +1326,7 @@ int main(int argc, char** argv){//main
 	   rechitBHsumE02/simhitBHsumE02,
 	   rechitBHsumE03/simhitBHsumE03);
     std::cout << "nhit: "  << nhit << " / " << (*simhitvec).size() << " " << nhitscinti << std::endl;
+   }
 
     //=========
 
@@ -1217,6 +1341,22 @@ int main(int argc, char** argv){//main
 
   if(debug) std::cout<<"writing files"<<std::endl;
 
+  // draw th2poly on canvas
+
+  if (develop){
+
+    map_1->GetZaxis()->SetRangeUser(1,200);
+    map_1->Print();
+    map_1->SetMinimum(0.5);
+    map_1->Write();
+    
+    for (int ilayer=36;ilayer<=51;ilayer++){
+      //sprintf(title,"map_1_%d",ilayer);
+      map_1_layer[ilayer]->Print();
+      map_1_layer[ilayer]->Write();
+    }
+  }
+  
   outputFile->cd();
   outputFile->Write();
   outputFile->Close();
