@@ -238,8 +238,10 @@ int main(int argc, char** argv){//main
   else if (shape==4) geomConv.initialiseSquareMap(calorSizeXY,10.);
 
   //square map for BHCAL
-  geomConv.initialiseSquareMap1(1.4,3.0,-1.*TMath::Pi(),TMath::Pi(),0.01745);//eta phi segmentation
-  geomConv.initialiseSquareMap2(1.4,3.0,-1.*TMath::Pi(),TMath::Pi(),0.02182);//eta phi segmentation
+  //geomConv.initialiseSquareMap1(1.4,3.0,-1.*TMath::Pi(),TMath::Pi(),0.01745);//eta phi segmentation
+  //geomConv.initialiseSquareMap2(1.4,3.0,-1.*TMath::Pi(),TMath::Pi(),0.02182);//eta phi segmentation
+  geomConv.initialiseSquareMap1(1.4,3.0,-1.*TMath::Pi(),TMath::Pi(),TMath::Pi()*2./360.);//eta phi segmentation
+  geomConv.initialiseSquareMap2(1.4,3.0,-1.*TMath::Pi(),TMath::Pi(),TMath::Pi()*2./288.);//eta phi segmentation
   std::vector<unsigned> granularity;
   granularity.resize(myDetector.nLayers(),1);
   geomConv.setGranularity(granularity);
@@ -320,7 +322,7 @@ int main(int argc, char** argv){//main
   //map_3 = geomConv.squareMap2();
 
   //---- xmin = 1.4, ymin = -3.14159 side = 0.01745, nx = 91, ny=360
-  //---- xmin = 1.4, ymin = -3.14159 side = 0.02182, nx = 73, ny=287
+  //---- xmin = 1.4, ymin = -3.14159 side = 0.02182, nx = 73, ny=287 --> 288
   double rbins2[92];
   double rbins3[74];
   TH2F* map_TH2F_2[4];
@@ -362,7 +364,7 @@ int main(int argc, char** argv){//main
       rbins2[91-ibin]=z*tan(2.*atan(exp(-eta)));    
     }    
     sprintf(title,"map_TH2F_2_%d",ilayer);
-    map_TH2F_2[ilayer-36] = new TH2F(title,title,360,-1.*TMath::Pi(),3.1404,91,rbins2);
+    map_TH2F_2[ilayer-36] = new TH2F(title,title,360,-1.*TMath::Pi(),TMath::Pi(),91,rbins2);
     double eta_tmp=1.4+double(eta_index[ilayer_org]-bin_exclude)*0.01745;
     double z_tmp = z_layer[ilayer_org];
     r_cut[ilayer_org] = z_tmp*tan(2.*atan(exp(-eta_tmp)));    
@@ -376,7 +378,7 @@ int main(int argc, char** argv){//main
       rbins3[73-ibin]=z*tan(2.*atan(exp(-eta)));    
     }    
     sprintf(title,"map_TH2F_3_%d",ilayer);
-    map_TH2F_3[ilayer-40] = new TH2F(title,title,287,-1.*TMath::Pi(),3.12075,73,rbins3);
+    map_TH2F_3[ilayer-40] = new TH2F(title,title,288,-1.*TMath::Pi(),TMath::Pi(),73,rbins3);
     double eta_tmp=1.4+double(eta_index[ilayer_org]-bin_exclude)*0.02182;
     double z_tmp = z_layer[ilayer_org];
     r_cut[ilayer_org] = z_tmp*tan(2.*atan(exp(-eta_tmp)));    
@@ -567,7 +569,9 @@ int main(int argc, char** argv){//main
       std::cout << " -- AbsWeight size: " << absW.size() << std::endl;
       std::cout<<" values are ";
       for (unsigned iL(0); iL<(*ssvec).size();++iL){
-	std::cout<<" "<<absW[iL];
+	//KH std::cout<<" "<<absW[iL];
+	printf("layer# voldEdx, absW, volLambdatrans(), volX0trans(): %4d %8.3f %8.3f %8.3f %8.3f\n",
+	       iL,(*ssvec)[iL].voldEdx(),absW[iL],(*ssvec)[iL].volLambdatrans(),(*ssvec)[iL].volX0trans());
       }
       std::cout<<std::endl;
     }
@@ -712,6 +716,20 @@ int main(int argc, char** argv){//main
 	  h_nszx->Fill(lHit.get_z(),lHit.get_x());
 	}
       
+      //initialise calibration class
+      const unsigned nSiLayers = 2;  // this is what I see in generation, but why?
+      if (debug>2) std::cout << "KHKH: inFilePath,bypassR,nSiLayers: " << inFilePath<<" "<<bypassR<<" "<<nSiLayers << std::endl;
+      HGCSSCalibration mycalib(inFilePath,bypassR,nSiLayers);
+      mycalib.setVertex(eventRec->vtx_x(),eventRec->vtx_y(),eventRec->vtx_z());
+
+      //KH noise tests
+      /*
+      if(isScint){
+	printf("Scinti (E,r,lay,adc): %8.2f %8.2f %8d %8.2f\n",lHit.energy(),r_hit,layer,lenergy/mycalib.MeVToMip(layer,r_hit));
+      } else {
+	printf("Si     (E,r,lay,adc): %8.2f %8.2f %8d %8.2f\n",lHit.energy(),r_hit,layer,lenergy/mycalib.MeVToMip(layer,r_hit));
+      }
+      */
 
       int ilayer = ixx;
 
@@ -1170,9 +1188,21 @@ int main(int argc, char** argv){//main
 	unsigned adc = 0;
 	double digiE;
 	adc = myDigitiser.adcConverter(energy,type);
+	/* KH debug
 	digiE = myDigitiser.adcToMIP(adc,type);	
+	printf("Si: adc MIP %8d %8.2f\n",adc,digiE);
+	*/
 	if (adc<5) continue;                // ADC cut on silicon hits
       } else {
+	/* KH debug 
+	DetectorEnum adet = subdet.type;
+	unsigned adc = 0;
+	double digiE;
+	adc = myDigitiser.adcConverter(energy,type);
+	adc = myDigitiser.adcConverter(energy,type);
+	digiE = myDigitiser.adcToMIP(adc,type);	
+	printf("Scinti: adc MIP %8d %8.2f\n",adc,digiE);
+	*/
 	if (energy<0.5) continue;           // MIP cut (>=0.5MIP) on scintilator hits
       }
 
