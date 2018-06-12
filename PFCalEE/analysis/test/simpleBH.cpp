@@ -25,6 +25,7 @@
 #include "TMatrixD.h"
 #include "TMatrixDSym.h"
 #include "TVectorD.h"
+#include "TLorentzVector.h"
 
 #include "HGCSSEvent.hh"
 #include "HGCSSInfo.hh"
@@ -491,8 +492,13 @@ int main(int argc, char** argv){//main
   // histos from sarahs code //
   TH2F* h_banana = new TH2F("h_banana","banana plot",1000,0.,500.,1000,0.,500.);
   TH1F* h_fracBH = new TH1F("h_fracBH","fraction in BH",100,-01.,1.1);
-  
-  ///////////////////////////////////////////////////////
+
+  TH1F* h_genvec_size = new TH1F("genvec_size","genvec_size",20,0.,20.);
+  //TH2F *h_genvec_RZ = new TH2F("h_genvec_RZ","h_genvec_RZ",2000,-1000.,1000.,500,0.,500.);  
+  TH2F* h_gentracks = new TH2F("h_gentracks","R vs Z",520,0,5200,520,0,5200);
+  TH1F* h_leadgenpt_over_allgenpt = new TH1F("h_leadgenpt_over_allgenpt","h_leadgenpt_over_allgenpt",60,-0.1,1.1);
+ 
+///////////////////////////////////////////////////////
   //////////////////  start event loop
   //////////////////////////////////////////////////////
 
@@ -601,7 +607,7 @@ int main(int argc, char** argv){//main
       phigen=(*genvec)[0].phi();
       //if(phigen<0) phigen=2.*TMath::Pi()+phigen;
     }
-    h_getaphi->Fill(etagen,phigen);
+    
     if(debug) {
       std::cout<<" gen vec size is "<<(*genvec).size()<<std::endl;
       std::cout<<" first gen   pt  "<<ptgen<<" egen  "<<Egen<<" pidgen  "<<pidgen<<" etagen  "<<etagen<<" phi gen "<<phigen<<  "mass gen "<< massgen<<std::endl;
@@ -610,7 +616,74 @@ int main(int argc, char** argv){//main
       }
     }
 
+    Egen=0.; // added to later sum all egen 
+    double egentemp = 0;
+    TLorentzVector tlzv_tmp;
+    TLorentzVector tlzv;
+    TLorentzVector tlzv0;
+    
+    tlzv.SetPtEtaPhiE(0.,0.,0.,0.);
+    tlzv0.SetPtEtaPhiE(0.,0.,0.,0.);
+    for (unsigned iP(0); iP<(*genvec).size(); ++iP){
+      double rtemp = sqrt((*genvec)[iP].x()*(*genvec)[iP].x()+(*genvec)[iP].y()*(*genvec)[iP].y());
+      h_gentracks->Fill((*genvec)[iP].z(),rtemp);
+      egentemp = sqrt((*genvec)[iP].px()/1000.*(*genvec)[iP].px()/1000.+(*genvec)[iP].py()/1000.*(*genvec)[iP].py()/1000.+(*genvec)[iP].pz()/1000.*(*genvec)[iP].pz()/1000.);
+      //egentemp = (*genvec)[iP].E()/1000;
+      Egen +=  egentemp;
+      tlzv_tmp.SetPtEtaPhiE((*genvec)[iP].pt(), (*genvec)[iP].eta(), (*genvec)[iP].phi(), (*genvec)[iP].E());
+      if (iP==0) tlzv0.SetPtEtaPhiE((*genvec)[iP].pt(), (*genvec)[iP].eta(), (*genvec)[iP].phi(), (*genvec)[iP].E());
+      tlzv += tlzv_tmp;
+      //std::cout<<"Gen particle "<<iP<<" is (pdgid) "<<(*genvec)[iP].pdgid()<<" with trackID: "<<(*genvec)[iP].trackID()<<" at eta: "<<(*genvec)[iP].eta()<<" with energy: "<<egentemp<<std::endl;
+      //std::cout<<"really real energy "<<Egen<<std::endl;
+      //if( (*genvec)[iP].trackID() == 1 )
+      //  {
+      //    etagen = (*genvec)[iP].eta();
+      //    phigen = (*genvec)[iP].phi();
+      //  }
+      
+    }
+    
+    etagen = tlzv.Eta();// get eta from summed tlorentz vectors 
+    phigen = tlzv.Phi();// get phi from summed tlorentz vectors 
+    ptgen = tlzv.Pt();
 
+    for (unsigned iP(0); iP<(*genvec).size(); ++iP){
+      bool print=false;
+      if ((*genvec).size()>=2 && tlzv0.Pt()/tlzv.Pt()<0.5 ) print=true; // Leading genvec is less than total genvec
+      if (print) { 
+	if (iP==0) std::cout << std::endl;
+	if (iP==0) std::cout << "tlzv(Pt),tlzv0(Pt): " << tlzv.Pt()/1000. << " " << tlzv0.Pt()/1000. << "(GeV)" << std::endl;
+	if (iP==0) std::cout << "tlzv(Et),tlzv0(Et): " << tlzv.Et()/1000. << " " << tlzv0.Et()/1000. << "(GeV)" << std::endl;
+	if (iP==0) std::cout << "tlzv(E), tlzv0(E):  " << tlzv.E()/1000.  << " " << tlzv0.E()/1000.  << "(GeV)" << std::endl;
+	std::cout<<" gen particle "<<iP<<" is (pdgid) "<<(*genvec)[iP].pdgid()<<std::endl;
+	double rtemp = sqrt((*genvec)[iP].x()*(*genvec)[iP].x()+(*genvec)[iP].y()*(*genvec)[iP].y());
+	tlzv_tmp.SetPtEtaPhiE((*genvec)[iP].pt(), (*genvec)[iP].eta(), (*genvec)[iP].phi(), (*genvec)[iP].E());
+	std::cout << "   (x,y,z.r): " << (*genvec)[iP].x() << " " 
+		  << (*genvec)[iP].y() << " " 
+		  << (*genvec)[iP].z() << " " 
+		  << rtemp << " (cm)" << std::endl;
+	std::cout << "   (px,py,pz.pt,et,e): " << (*genvec)[iP].px()/1000. << " "
+		  << (*genvec)[iP].py()/1000. << " "
+		  << (*genvec)[iP].pz()/1000. << " "
+		  << tlzv_tmp.Pt()/1000. << " " 
+		  << tlzv_tmp.Et()/1000. << " " 
+		  << tlzv_tmp.E()/1000.  << " (GeV)" << std::endl;
+	/*
+	std::cout << "   (px/x,py/y,pz/z): " << (*genvec)[iP].px()/1000./(*genvec)[iP].x() << " "
+		  << (*genvec)[iP].py()/1000./(*genvec)[iP].y() << " "
+		  << (*genvec)[iP].pz()/1000./(*genvec)[iP].z() << " "
+		  << std::endl;
+	*/
+      }      
+    }
+
+    h_getaphi->Fill(etagen,phigen);
+    h_genvec_size->Fill((*genvec).size());   
+    if (tlzv.Pt()>0.)
+      h_leadgenpt_over_allgenpt->Fill(tlzv0.Pt()/tlzv.Pt());   
+
+    //--- Define gen direction better
+    
     bool isScint = false;
     if (debug) std::cout << " - Event contains " << (*rechitvec).size() << " rechits." << std::endl;
 
